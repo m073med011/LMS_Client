@@ -57,8 +57,8 @@
           <button
             type="submit"
             :disabled="isSubmitting"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            class="w-full h-9 hover:bg-blue-600 dark:hover:bg-blue-700 dark:text-white rounded-sm border dark:border-gray-600"
+            >
             <span v-if="isSubmitting">Registering...</span>
             <span v-else>Register</span>
           </button>

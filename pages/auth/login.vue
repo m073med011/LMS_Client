@@ -41,7 +41,7 @@
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Don't have an account?
-          <a href="/register" class="text-blue-600 hover:underline dark:text-blue-400">Register</a>
+          <a href="/auth/register" class="text-blue-600 hover:underline dark:text-blue-400">Register</a>
         </p>
       </div>
     </div>
