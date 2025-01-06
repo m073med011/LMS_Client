@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+  <div class="min-h-screen  dark:bg-gray-900">
     <div class="flex flex-col lg:flex-row min-h-screen">
       <!-- Sidebar for mobile (above Navbar) -->
       <Sidebar 
@@ -31,7 +31,7 @@
         <!-- Main Content -->
         <main 
           :class="[
-            'flex-1 transition-all duration-300 ease-in-out p-6 pt-[calc(57px+1.5rem)] overflow-auto',
+            'flex-1 transition-all duration-300 ease-in-out pt-[calc(57px+1.5rem)] overflow-auto',
             { 'lg:ml-64': isSidebarOpen && authStore.user, 'ml-0': !isSidebarOpen || !authStore.user }
           ]"
         >
@@ -70,7 +70,7 @@ interface MenuItem {
 
 const menu: MenuItem[] = [
   { title: "Dashboard", route: "/dashboard", name: 'hugeicons:dashboard-square-02' },
-  { title: "My Courses", route: "/courses", name: 'hugeicons:bookshelf-03' },
+  { title: "My Courses", route: "/my-courses", name: 'hugeicons:bookshelf-03' },
   { title: "My Organisation", route: "/organisation", name: 'hugeicons:building-05' },
   { title: "My Schedule", route: "/schedule", name: 'hugeicons:tablet-pen' },
   { title: "My Chat", route: "/chat", name: 'hugeicons:message-01' },

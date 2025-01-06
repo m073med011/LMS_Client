@@ -160,6 +160,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+const alertmassage =ref("هذا ليس المنتج النهائي")
+onMounted(() => {
+  alert(alertmassage.value);
+ 
+  
+})
+
+
+
 // Extended Event interface
 interface Event {
   id: number

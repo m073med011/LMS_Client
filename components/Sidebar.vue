@@ -6,7 +6,7 @@
       'top-0 h-screen': !isDesktop,
       'top-[57px] h-[calc(100vh-57px)]': isDesktop
     }"
-    class="fixed left-0 bg-white border-r dark:bg-gray-800 dark:border-gray-700 w-64 transition-all duration-300 ease-in-out overflow-y-auto"
+    class="fixed left-0 bg-white border-r dark:bg-gray-800 dark:border-gray-700 w-56 transition-all duration-300 ease-in-out overflow-y-auto"
   >
     <!-- Close button for mobile -->
     <button

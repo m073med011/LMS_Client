@@ -12,7 +12,7 @@
           </p>
           <div class="flex gap-4">
             <nuxt-link
-              to="/register"
+              to="/auth/register"
               class="bg-blue-500 text-white hover:bg-blue-100 font-medium py-3 px-6 rounded shadow-md transition"
             >
               Get Started
