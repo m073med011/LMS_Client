@@ -13,7 +13,7 @@ export default defineNuxtConfig({
   modules: ['@nuxt/icon', '@pinia/nuxt'],
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:5000/api/auth', // API base URL
+      apiBase: 'http://localhost:5000/api', // API base URL
     },
   },
 })

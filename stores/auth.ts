@@ -2,22 +2,13 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useRuntimeConfig } from '#imports'
 
-// Comprehensive User Interface
+// User Interface
 interface User {
   _id?: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  systemRoles?: 'student' | 'freelancer';
-  contactInfo?: {
-    socialLinks?: {
-      facebook?: string;
-      linkedin?: string;
-      website?: string;
-      phone?: string;
-      whatsapp?: string;
-    }
-  };
+  phone: string;
+  createdAt?: Date;
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -32,7 +23,7 @@ export const useAuthStore = defineStore('auth', {
       return !!this.token
     },
     getUserFullName(): string {
-      return this.user ? `${this.user.firstName} ${this.user.lastName}` : ''
+      return this.user ? this.user.name : ''
     }
   },
 
@@ -43,7 +34,7 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
 
       try {
-        const response = await axios.post(`${config.public.apiBase}/login`, { 
+        const response = await axios.post(`${config.public.apiBase}/auth/login`, { 
           email, 
           password 
         })
@@ -60,6 +51,7 @@ export const useAuthStore = defineStore('auth', {
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Login failed'
         console.error('Login failed:', error)
+        throw error
       }
     },
 
@@ -67,26 +59,18 @@ export const useAuthStore = defineStore('auth', {
     async register(
       name: string, 
       email: string, 
-      password: string, 
-      contactInfo?: { 
-        socialLinks?: { 
-          facebook?: string; 
-          linkedin?: string; 
-          website?: string; 
-          phone?: string; 
-          whatsapp?: string; 
-        } 
-      }
+      password: string,
+      phone: string,
     ) {
       const config = useRuntimeConfig()
       this.error = null
 
       try {
-        const response = await axios.post(`${config.public.apiBase}/register`, {
+        const response = await axios.post(`${config.public.apiBase}/auth/register`, {
           name,
           email,
           password,
-          contactInfo
+          phone
         })
 
         // Handle successful registration
@@ -95,32 +79,10 @@ export const useAuthStore = defineStore('auth', {
         this.saveToLocalStorage()
 
         return response.data
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : 'Registration failed'
-        
-        this.error = errorMessage
+      } catch (error: any) {
+        this.error = error.response?.data?.message || 'Registration failed'
         console.error('Registration failed:', error)
-        throw new Error(errorMessage)
-      }
-    },
-
-    // Fetch user data from the backend
-    async fetchUser() {
-      const config = useRuntimeConfig()
-      this.error = null
-
-      if (this.token) {
-        try {
-          const response = await axios.get(`${config.public.apiBase}/user`)
-          this.user = response.data
-          return response.data
-        } catch (error: any) {
-          this.error = error.response?.data?.message || 'Failed to fetch user'
-          console.error('Failed to fetch user:', error)
-          this.logout()
-        }
+        throw error
       }
     },
 
@@ -131,8 +93,12 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       this.clearFromLocalStorage()
       delete axios.defaults.headers.common['Authorization']
-      navigateTo('/auth/login'); // Adjust the path if needed
+      navigateTo('/auth/login')
+    },
 
+    // Clear any stored error
+    clearError() {
+      this.error = null
     },
 
     // Save token and user info to localStorage
@@ -177,11 +143,24 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Clear any stored error
-    clearError() {
+    // Fetch current user data
+    async fetchUser() {
+      const config = useRuntimeConfig()
       this.error = null
+
+      if (this.token) {
+        try {
+          const response = await axios.get(`${config.public.apiBase}/auth/me`)
+          this.user = response.data.user
+          return response.data
+        } catch (error: any) {
+          this.error = error.response?.data?.message || 'Failed to fetch user'
+          console.error('Failed to fetch user:', error)
+          this.logout()
+        }
+      }
     }
-  },
+  }
 })
 
 // Initialize the store (load token and user data) on app startup

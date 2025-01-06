@@ -5,15 +5,16 @@
 </template>
 
 <script setup lang="ts">
+import {titlepage }from '../data/index'
 
 definePageMeta({
   requiresAuth: true,
 })
 
 useHead({
-  title: 'Dashboard | Learning Platform',
+  title: ` ${titlepage.Dashboard.title} | Learning Platform`,
   meta: [
-    { name: 'description', content: 'This is the dashboard page of the learning platform' },
+    { name: `${titlepage.Dashboard.description}`},
   ],
 })
 </script>

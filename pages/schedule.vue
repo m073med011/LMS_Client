@@ -6,7 +6,7 @@
     <div class="mb-4">
       <button 
         @click="openAddEventModal(null)" 
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+        class="bg-blue-500 dark:text-white px-4 py-2 rounded hover:bg-blue-600 transition"
       >
         Add New Event
       </button>
@@ -104,7 +104,7 @@
           </button>
           <button 
             @click="saveEvent" 
-            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
           >
             Save Event
           </button>

@@ -39,6 +39,18 @@
           <div v-if="!form.password && submitted" class="text-red-500 text-sm">Password is required</div>
         </div>
 
+        <div class="mb-4">
+          <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            v-model="form.phone"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Enter your phone number"
+          />
+          <div v-if="!form.phone && submitted" class="text-red-500 text-sm">Phone number is required</div>
+        </div>
+
         <div v-if="authStore.error" class="mb-4 text-red-500 text-sm">{{ authStore.error }}</div>
 
         <div class="flex items-center justify-between">
@@ -65,7 +77,9 @@ const form = reactive({
   name: '',
   email: '',
   password: '',
+  phone: '',
 });
+
 const submitted = ref(false);
 const isSubmitting = ref(false);
 
@@ -75,16 +89,26 @@ const router = useRouter();
 const handleSubmit = async () => {
   submitted.value = true;
 
-  if (!form.name || !form.email || !form.password) {
+  if (!form.name || !form.email || !form.password || !form.phone) {
     return;
   }
 
   isSubmitting.value = true;
-  const result = await authStore.register(form.name, form.email, form.password);
-  isSubmitting.value = false;
-
-  if (result.success) {
-    router.push('/dashboard');
+  try {
+    const result = await authStore.register(
+      form.name, 
+      form.email, 
+      form.password,
+      form.phone,
+    );
+    
+    if (result.success) {
+      router.push('/dashboard');
+    }
+  } catch (error) {
+    console.error('Registration failed:', error);
+  } finally {
+    isSubmitting.value = false;
   }
 };
 </script>
