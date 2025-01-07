@@ -8,7 +8,7 @@
         v-if="authStore.user"
 
           @click="toggleSidebar"
-          class="p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 transition-colors"
+          class="p-2 text-sm text-gray-500 rounded-lg dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 transition-colors"
         >
           <span class="sr-only">Toggle sidebar</span>
           <Icon
@@ -17,9 +17,8 @@
           />
         </button>
 
-        <!-- App Name -->
         <NuxtLink
-          to="/"
+          :to="isAuthenticated ? '/dashboard' : '/'"
           class="text-xl font-semibold dark:text-white hover:opacity-80 transition-opacity"
         >
           My App
@@ -31,7 +30,7 @@
         <!-- Dark Mode Toggle Button -->
         <button
           @click="toggleTheme"
-          class="p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 transition-colors"
+          class="p-2 text-sm text-gray-500 rounded-lg  dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 transition-colors"
         >
           <span class="sr-only">Toggle Dark Mode</span>
           <Icon
@@ -76,7 +75,7 @@
         </div>
 
         <!-- Login/Register Links -->
-        <div v-else>
+        <div class="dark:text-white" v-else >
           <NuxtLink to="/auth/login" class="text-sm font-medium hover:underline">
             Login
           </NuxtLink>
@@ -111,7 +110,7 @@ const { theme, toggleTheme } = useTheme();
 // Auth Store
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
-const userName = computed(() => authStore.user?.firstName || '');
+const userName = computed(() => authStore.user?.name || '');
 const userEmail = computed(() => authStore.user?.email || '');
 const userProfilePicture = computed(() => {
   return 'https://randomuser.me/api/portraits/med/men/75.jpg';

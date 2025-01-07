@@ -69,6 +69,7 @@ const handleLogin = async () => {
 <style>
 /* Centering adjustments */
 body {
+  
   margin: 0;
   font-family: Arial, sans-serif;
 }

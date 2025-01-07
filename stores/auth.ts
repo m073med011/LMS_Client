@@ -2,12 +2,12 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useRuntimeConfig } from '#imports'
 
-// User Interface
 interface User {
   _id?: string;
   name: string;
   email: string;
   phone: string;
+  role: string;
   createdAt?: Date;
 }
 
@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated(): boolean {
       return !!this.token
     },
-    getUserFullName(): string {
+    getUserName(): string {
       return this.user ? this.user.name : ''
     }
   },
@@ -61,6 +61,7 @@ export const useAuthStore = defineStore('auth', {
       email: string, 
       password: string,
       phone: string,
+      role: string,
     ) {
       const config = useRuntimeConfig()
       this.error = null

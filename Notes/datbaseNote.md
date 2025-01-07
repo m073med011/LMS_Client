@@ -3,7 +3,6 @@ db.users.insertMany([
     {
         _id: ObjectId("60a5f0c9e6b3f3001f3e5b01"),
         firstName: "John",
-        lastName: "Doe",
         email: "john.doe@example.com",
         passwordHash: "$2b$10$randomhashvalue123456", // Hashed password
         systemRoles: ["student", "freelancer"],

@@ -1,20 +1,13 @@
 <template>
-  <div class="flex justify-center items-center h-screen">
-    comming soon ...
+  <div class="flex justify-center items-center h-screen dark:text-white">
+    Dashboard....coming soon
   </div>
 </template>
 
-<script setup lang="ts">
-import {titlepage }from '../data/index'
+<script lang="ts" setup>
 
-definePageMeta({
-  requiresAuth: true,
-})
-
-useHead({
-  title: ` ${titlepage.Dashboard.title} | Learning Platform`,
-  meta: [
-    { name: `${titlepage.Dashboard.description}`},
-  ],
-})
 </script>
+
+<style>
+
+</style>
