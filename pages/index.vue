@@ -2,7 +2,7 @@
   <div>
 
     <!-- Hero Section -->
-    <section class="py-2 px-5 bg-gray-100 dark:bg-gray-900">
+    <section class="py-2 px-5  dark:bg-gray-900">
       <div class="container mx-auto grid md:grid-cols-2 items-center">
         <div>
           <h1 class="text-4xl md:text-5xl text-gray-800 dark:text-white mb-5">Grow your skills,</h1>

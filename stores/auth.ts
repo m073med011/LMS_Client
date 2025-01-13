@@ -71,7 +71,8 @@ export const useAuthStore = defineStore('auth', {
           name,
           email,
           password,
-          phone
+          phone,
+          role
         })
 
         // Handle successful registration

@@ -70,11 +70,11 @@ interface MenuItem {
 
 const menu: MenuItem[] = [
   { title: "Dashboard", route: "/dashboard", name: 'hugeicons:dashboard-square-02' },
-  { title: "My Courses", route: "/my-courses", name: 'hugeicons:bookshelf-03' },
+  { title: "My Courses", route: "/courses/owned-courses", name: 'hugeicons:bookshelf-03' },
   { title: "My Organisation", route: "/organisation", name: 'hugeicons:building-05' },
   { title: "My Schedule", route: "/schedule", name: 'hugeicons:tablet-pen' },
   { title: "My Chat", route: "/chat", name: 'hugeicons:message-01' },
-  { title: "Store", route: "/store", name: 'hugeicons:store-add-02' },
+  { title: "Store", route: "/courses", name: 'hugeicons:store-add-02' },
 ];
 
 const isSidebarOpen = ref(false);
