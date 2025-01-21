@@ -2,7 +2,6 @@
   <div class="container mx-auto px-4 py-8 dark:bg-gray-900 dark:text-gray-100">
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-3xl font-bold">Available Courses</h1>
-      
     </div>
 
     <!-- Search and Filters -->
@@ -42,7 +41,7 @@
       </button>
 
       <NuxtLink
-        v-if="user?.role != 'student'"
+        v-if="user?.role !== 'student'"
         to="/courses/create"
         class="bg-blue-600 py-2 px-7 rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 border dark:border-gray-700"
       >
@@ -51,13 +50,13 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="courseStore.loading" class="flex justify-center items-center py-12">
+    <div v-if="loading" class="flex justify-center items-center py-12">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="courseStore.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-700 dark:border-red-600 dark:text-red-100">
-      {{ courseStore.error }}
+    <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-700 dark:border-red-600 dark:text-red-100">
+      {{ error }}
     </div>
 
     <!-- Course List/Grid -->
@@ -74,10 +73,10 @@
       >
         <div class="relative">
           <img 
-            :src="course.image" 
+            :src="course.thumbnail" 
             :alt="course.title"
             class="w-full h-48 object-cover"
-            @error="e => (e.target as HTMLImageElement).src = 'https://placehold.co/600x400'"
+            @error="handleImageError"
           />
           <div class="absolute top-2 right-2">
             <span
@@ -115,7 +114,7 @@
 
           <div class="flex justify-between items-center">
             <NuxtLink
-              :to="'/courses/' + course._id"
+              :to="'./courses/' + course._id"
               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500"
             >
               View Details
@@ -124,7 +123,7 @@
               v-if="!isEnrolled(course)"
               @click="buyCourse(course._id)"
               class="bg-blue-600 dark:text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-              :disabled="courseStore.loading"
+              :disabled="loading"
             >
               Enroll Now
               <span v-if="course.price > 0" class="ml-1">${{ course.price }}</span>
@@ -145,20 +144,61 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { useCourseStore } from '../../stores/course'
-import { useAuthStore } from '../../stores/auth'
 
-const courseStore = useCourseStore()
-const authStore = useAuthStore()
-const user = computed(() => authStore.user)
+interface Instructor {
+  _id: string
+  name: string
+  email: string
+}
 
-const searchQuery = ref('')
-const selectedLevel = ref('')
-const selectedCategory = ref('')
-const isGridView = ref(true)
+interface Student {
+  _id: string
+  name: string
+  email: string
+}
 
-const filteredCourses = computed(() => {
-  return courseStore.courses.filter(course => {
+interface Course {
+  _id: string
+  title: string
+  description: string
+  slug: string
+  price: number
+  duration: number
+  level: 'beginner' | 'intermediate' | 'advanced'
+  category: string
+  thumbnail: string
+  instructor: Instructor
+  enrolledStudents?: Student[]
+  isPublished: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+interface User {
+  _id: string
+  name: string
+  email: string
+  role: 'student' | 'instructor' | 'admin'
+}
+
+interface ApiResponse<T> {
+  success: boolean
+  message?: string
+  courses?: T[]
+  user?: T
+}
+
+const courses = ref<Course[]>([])
+const loading = ref<boolean>(false)
+const error = ref<string>('')
+const user = ref<User | null>(null)
+const searchQuery = ref<string>('')
+const selectedLevel = ref<string>('')
+const selectedCategory = ref<string>('')
+const isGridView = ref<boolean>(true)
+
+const filteredCourses = computed<Course[]>(() => {
+  return courses.value.filter(course => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       course.description.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -168,29 +208,86 @@ const filteredCourses = computed(() => {
   })
 })
 
-const uniqueCategories = computed(() => {
-  return [...new Set(courseStore.courses.map(course => course.category))]
+const uniqueCategories = computed<string[]>(() => {
+  return [...new Set(courses.value.map(course => course.category))]
 })
 
-const toggleViewMode = () => {
+const toggleViewMode = (): void => {
   isGridView.value = !isGridView.value
 }
 
 onMounted(async () => {
-  await courseStore.fetchCourses()
+  await fetchCourses()
+  await fetchCurrentUser()
 })
 
-async function buyCourse(courseId: string) {
+async function fetchCourses(): Promise<void> {
   try {
-    await courseStore.buyCourse(courseId)
-    await courseStore.fetchCourses() // Refresh the course list
-    alert('Successfully enrolled! You can now access the course from My Courses.')
-  } catch (error: unknown) {
-    alert((error as Error).message || 'Failed to enroll in course')
+    loading.value = true
+    error.value = ''
+    const response = await fetch('http://localhost:5000/api/courses', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    const data: ApiResponse<Course> = await response.json()
+    if (data.success && data.courses) {
+      courses.value = data.courses
+    } else {
+      throw new Error(data.message || 'Failed to fetch courses')
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'An error occurred while fetching courses'
+  } finally {
+    loading.value = false
   }
 }
 
-function isEnrolled(course: Course) {
+async function fetchCurrentUser(): Promise<void> {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) return
+
+    const response = await fetch('http://localhost:5000/api/users/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const data: ApiResponse<User> = await response.json()
+    if (data.success && data.user) {
+      user.value = data.user
+    }
+  } catch (err) {
+    console.error('Failed to fetch user:', err instanceof Error ? err.message : 'Unknown error')
+  }
+}
+
+async function buyCourse(courseId: string): Promise<void> {
+  try {
+    const response = await fetch(`http://localhost:5000/api/courses/${courseId}/buy`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      }
+    })
+    const data: ApiResponse<null> = await response.json()
+    if (data.success) {
+      await fetchCourses() // Refresh the course list
+      alert('Successfully enrolled! You can now access the course from My Courses.')
+    } else {
+      throw new Error(data.message)
+    }
+  } catch (error) {
+    alert(error instanceof Error ? error.message : 'Failed to enroll in course')
+  }
+}
+
+function isEnrolled(course: Course): boolean {
   return course.enrolledStudents?.some(student => student._id === user.value?._id) || false
+}
+
+function handleImageError(e: Event): void {
+  const target = e.target as HTMLImageElement
+  target.src = 'https://placehold.co/600x400'
 }
 </script>

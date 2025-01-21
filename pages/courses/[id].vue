@@ -1,153 +1,160 @@
 <template>
-  <div class="container mx-auto px-4 py-8 dark:bg-gray-900 dark:text-gray-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Loading State -->
-    <div v-if="courseStore.loading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+    <div v-if="pending" class="flex justify-center items-center min-h-[60vh]">
+      <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500 dark:border-blue-400"></div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="courseStore.error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-900 dark:border-red-700 dark:text-red-200">
-      {{ courseStore.error }}
+    <div v-else-if="error" class="text-center py-12">
+      <h2 class="text-2xl font-bold text-red-600 dark:text-red-400">Error loading course</h2>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">{{ error.message }}</p>
     </div>
 
     <!-- Course Content -->
-    <template v-else-if="course">
-      <div class="flex justify-between items-start mb-8">
-        <div>
-          <h1 class="text-4xl font-bold mb-2 dark:text-white">{{ course.title }}</h1>
-          <p class="text-gray-600 dark:text-gray-300">{{ course.description }}</p>
-        </div>
-        <div class="flex gap-4">
-          <template v-if="user?.role === 'instructor' && course.instructor._id === user._id">
-            <NuxtLink
-              :to="'/courses/' + course._id + '/edit'"
-              class="bg-blue-600 dark:text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-            >
-              Edit Course
-            </NuxtLink>
-            <button
-              @click="handleDeleteCourse"
-              class="bg-red-600 dark:text-white px-4 py-2 rounded hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
-            >
-              Delete Course
-            </button>
-          </template>
-          <template v-else-if="user?.role === 'student'">
-            
-          </template>
-        </div>
-      </div>
-
-      <!-- Course Info -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800 dark:shadow-none">
-          <h3 class="font-semibold mb-2 dark:text-white">Instructor</h3>
-          <div class="flex items-center">
-            <img
-              :src="'https://ui-avatars.com/api/?name=' + encodeURIComponent(course.instructor.name)"
-              :alt="course.instructor.name"
-              class="w-10 h-10 rounded-full mr-3"
-            />
-            <div>
-              <p class="font-medium dark:text-white">{{ course.instructor.name }}</p>
-              <p class="text-sm text-gray-600 dark:text-gray-300">{{ course.instructor.email }}</p>
-            </div>
+    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-2">
+        <!-- Course Header -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          <img :src="course?.thumbnail" :alt="course?.title" class="w-full h-64 object-cover">
+          <div class="p-6">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ course?.title }}</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-300">{{ course?.description }}</p>
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800 dark:shadow-none">
-          <h3 class="font-semibold mb-2 dark:text-white">Course Details</h3>
-          <div class="space-y-2">
-            <p><span class="text-gray-600 dark:text-gray-400">Category:</span> <span class="dark:text-gray-200">{{ course.category }}</span></p>
-            <p><span class="text-gray-600 dark:text-gray-400">Duration:</span> <span class="dark:text-gray-200">{{ course.duration }} hours</span></p>
-            <p><span class="text-gray-600 dark:text-gray-400">Level:</span> <span class="dark:text-gray-200">{{ course.level }}</span></p>
+        <!-- Course Materials -->
+        <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Course Materials</h2>
+          <div v-if="course?.materials?.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-300">
+            No materials available yet
           </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800 dark:shadow-none">
-          <h3 class="font-semibold mb-2 dark:text-white">Enrollment</h3>
-          <p><span class="text-gray-600 dark:text-gray-400">Students:</span> <span class="dark:text-gray-200">{{ course.enrolledStudents.length }}</span></p>
-          <p><span class="text-gray-600 dark:text-gray-400">Status:</span> 
-            <span :class="course.isPublished ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'">
-              {{ course.isPublished ? 'Published' : 'Draft' }}
-            </span>
-          </p>
-        </div>
-      </div>
-
-      <!-- Course Materials -->
-      <div class="bg-white rounded-lg shadow p-6 dark:bg-gray-800 dark:shadow-none">
-        <h2 class="text-2xl font-bold mb-6 dark:text-white">Course Materials</h2>
-        <div class="space-y-4">
-          <div
-            v-for="material in course.materials"
-            :key="material._id"
-            class="flex items-center justify-between p-4 border rounded hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
-          >
-            <div class="flex items-center">
-              <span
-                class="mr-4"
-                :class="{
-                  'text-blue-500 dark:text-blue-400': material.type === 'video',
-                  'text-green-500 dark:text-green-400': material.type === 'document',
-                  'text-purple-500 dark:text-purple-400': material.type === 'quiz'
-                }"
-              >
-                <i v-if="material.type === 'video'" class="fas fa-video"></i>
-                <i v-else-if="material.type === 'document'" class="fas fa-file-alt"></i>
-                <i v-else class="fas fa-question-circle"></i>
-              </span>
-              <div>
-                <h3 class="font-medium dark:text-white">{{ material.title }}</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ material.type }}</p>
+          <ul v-else class="space-y-4">
+            <li v-for="material in course?.materials" :key="material._id" 
+                class="flex items-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+              <!-- Material Type Icon -->
+              <div class="flex-shrink-0">
+                <i v-if="material.type === 'video'" class="fas fa-video text-blue-500 dark:text-blue-400 text-xl"></i>
+                <i v-else-if="material.type === 'document'" class="fas fa-file-alt text-green-500 dark:text-green-400 text-xl"></i>
+                <i v-else-if="material.type === 'quiz'" class="fas fa-question-circle text-purple-500 dark:text-purple-400 text-xl"></i>
               </div>
+              <!-- Material Details -->
+              <div class="ml-4 flex-1">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ material.title }}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-300">Type: {{ material.type }}</p>
+              </div>
+              <!-- Action Button -->
+              <a :href="material.content" target="_blank" 
+                 class="ml-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400">
+                Access
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="lg:col-span-1">
+        <!-- Course Info Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Course Information</h2>
+          <div class="space-y-4">
+            <div class="flex items-center">
+              <i class="fas fa-clock text-gray-400 dark:text-gray-300 w-6"></i>
+              <span class="ml-2 dark:text-gray-300">Duration: {{ course?.duration }} hours</span>
             </div>
-            <a
-              v-if="isEnrolled || course.instructor._id === user?._id"
-              :href="material.content"
-              target="_blank"
-              class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Access Material
-            </a>
+            <div class="flex items-center">
+              <i class="fas fa-signal  dark:text-white w-6"></i>
+              <span class="ml-2 dark:text-gray-300">Level: {{ course?.level }}</span>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-folder  dark:text-gray-300 w-6"></i>
+              <span class="ml-2 dark:text-gray-300">Category: {{ course?.category }}</span>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-dollar-sign  dark:text-gray-300 w-6"></i>
+              <span class="ml-2 dark:text-gray-300">Price: ${{ course?.price }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructor Info -->
+        <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Instructor</h2>
+          <div v-if="course?.instructor" class="flex items-center">
+            <img 
+              :src="'https://ui-avatars.com/api/?name=' + (typeof course.instructor === 'object' && course.instructor !== null ? course.instructor.name : (typeof course.instructor === 'string' ? course.instructor : 'Unknown')) + '&size=128'" 
+              :alt="typeof course.instructor === 'object' && course.instructor !== null ? course.instructor.name : (typeof course.instructor === 'string' ? course.instructor : 'Unknown')"
+              class="h-12 w-12 rounded-full">
+            <div class="ml-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Instructor</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-300">ID: {{ typeof course.instructor === 'object' && course.instructor !== null ? course.instructor.name : course.instructor || 'Unknown' }}</p>
+            </div>
           </div>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useCourseStore } from '~/stores/course'
-import { useAuthStore } from '~/stores/auth'
+<script lang="ts" setup>
+interface Material {
+  _id: string;
+  title: string;
+  type: 'video' | 'document' | 'quiz';
+  content: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const route = useRoute()
-const router = useRouter()
-const courseStore = useCourseStore()
-const authStore = useAuthStore()
+interface Course {
+  _id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  instructor: string | { name: string }; // This is just the ID based on the API response
+  materials: Material[];
+  category: string;
+  duration: number;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  price: number;
+  isPublished: boolean;
+  enrolledStudents: string[];
+  purchases: any[];
+  createdAt: string;
+  updatedAt: string;
+  slug: string;
+  __v: number;
+  id: string;
+}
 
-const courseId = computed(() => route.params.id as string)
-const course = computed(() => courseStore.currentCourse)
-const user = computed(() => authStore.user)
-const isEnrolled = computed(() => {
-  if (!user.value || !course.value) return false
-  return course.value.enrolledStudents.some(student => student._id === user.value?._id)
-})
+interface ApiResponse {
+  success: boolean;
+  status: string;
+  course: Course;
+}
 
-onMounted(async () => {
-  await courseStore.fetchCourse(courseId.value)
-})
+const route = useRoute();
+const { data, pending, error } = await useFetch<ApiResponse>(`http://localhost:5000/api/courses/${route.params.id}`, {
+  key: route.params.id as string
+});
 
-const handleDeleteCourse = async () => {
-  if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
-    try {
-      await courseStore.deleteCourse(courseId.value)
-      router.push('/courses')
-    } catch (error) {
-      // Error is already handled in the store
-    }
+const course = computed(() => data.value?.course);
+</script>
+
+<style scoped>
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
-</script>
+</style>
